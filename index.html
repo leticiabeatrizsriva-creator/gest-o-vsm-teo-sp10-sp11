@@ -214,8 +214,11 @@
 </div>
 
 <script>
-const SHEET_ID = '2PACX-1vQrlGS8zgN5NsGe72aj8CxCoOqzTIc6PPLRAKfUo1efGoGHHHJGoKW_19P2Gf3sInRtNewTpbM616Ac';
+const APPS_SCRIPT_URL = "https://script.google.com/a/macros/mercadolivre.com/s/AKfycbzL__WsdiSUcFSs59iKPNJO8q9lSY7ARp8X_qgd-y1aAcCfrQa4O70oLJMWi2vNkg/exec";
 const SOURCES = [
+  { site: "SP11", gid: "1380405107" },
+  { site: "SP10", gid: "1523115913" },
+];
   { site: 'SP11', gid: '1380405107' },
   { site: 'SP10', gid: '1523115913' },
 ];
@@ -250,8 +253,8 @@ async function loadData() {
 
   try {
     const results = await Promise.all(SOURCES.map(async ({ site, gid }) => {
-      const url = `https://docs.google.com/spreadsheets/d/e/2PACX-1vQrlGS8zgN5NsGe72aj8CxCoOqzTIc6PPLRAKfUo1efGoGHHHJGoKW_19P2Gf3sInRtNewTpbM616Ac/pub?gid=${gid}&single=true&output=csv`;
-      const res = await fetch(url);
+      const url = `${APPS_SCRIPT_URL}?sheet=${site}`;
+      const res = await fetch(url, { redirect: 'follow' });
       if (!res.ok) throw new Error(`Erro ao carregar ${site}: HTTP ${res.status}`);
       const text = await res.text();
       const rows = parseCSV(text);
