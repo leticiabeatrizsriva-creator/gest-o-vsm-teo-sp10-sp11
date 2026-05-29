@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Plano de Ação VSM ICQA – SP10 & SP11</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #f5f4f0; --surface: #ffffff; --surface2: #eeecea;
+    --border: rgba(0,0,0,.09); --text: #1a1917; --muted: #7a7872; --accent: #1a1917;
+    --green: #1D9E75; --green2: #639922; --amber: #d97706; --red: #dc2626; --gray: #888780; --blue: #2563eb;
+    --r: 10px; --r-lg: 14px;
+  }
+  body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; font-size: 14px; line-height: 1.6; }
+  .page { max-width: 1200px; margin: 0 auto; padding: 2rem 1.5rem 4rem; }
+
+  header {
+    display: flex; align-items: flex-end; justify-content: space-between;
+    margin-bottom: 1.5rem; padding-bottom: 1.25rem; border-bottom: 1px solid var(--border);
+    flex-wrap: wrap; gap: 1rem;
+  }
+  .header-left h1 { font-size: 22px; font-weight: 600; letter-spacing: -.02em; line-height: 1.2; }
+  .header-left p { font-size: 13px; color: var(--muted); margin-top: 3px; }
+  .header-right { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+
+  .sync-btn {
+    display: flex; align-items: center; gap: 7px;
+    background: var(--accent); color: #fff; border: none; border-radius: var(--r);
+    padding: 8px 16px; font-family: inherit; font-size: 13px; font-weight: 500; cursor: pointer; transition: opacity .15s;
+  }
+  .sync-btn:hover { opacity: .8; }
+  .sync-btn svg { width:15px; height:15px; flex-shrink:0; }
+  .sync-btn.loading svg { animation: spin .8s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  #last-update { font-size: 12px; color: var(--muted); }
+
+  /* SITE TABS */
+  .site-tabs { display: flex; gap: 6px; margin-bottom: 1.5rem; }
+  .site-tab {
+    padding: 7px 18px; border-radius: var(--r); border: 1px solid var(--border);
+    background: var(--surface); font-family: inherit; font-size: 13px; font-weight: 500;
+    cursor: pointer; color: var(--muted); transition: all .15s;
+  }
+  .site-tab:hover { background: var(--surface2); }
+  .site-tab.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+  /* KPIs */
+  .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin-bottom: 1.5rem; }
+  .kpi { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-lg); padding: 1rem 1.25rem; }
+  .kpi .label { font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin-bottom: 6px; }
+  .kpi .value { font-size: 28px; font-weight: 600; line-height: 1; letter-spacing: -.03em; }
+  .kpi .sub { font-size: 12px; color: var(--muted); margin-top: 5px; }
+  .prog { height: 4px; background: var(--surface2); border-radius: 2px; margin-top: 8px; overflow: hidden; }
+  .prog-fill { height: 100%; background: var(--green2); border-radius: 2px; transition: width .6s ease; }
+
+  /* SITE KPI SPLIT */
+  .site-kpi-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 1.5rem; }
+  .site-kpi-box { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-lg); padding: 1rem 1.25rem; }
+  .site-kpi-box .site-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .07em; color: var(--muted); margin-bottom: .75rem; padding-bottom: .5rem; border-bottom: 1px solid var(--border); }
+  .site-kpi-box .mini-kpis { display: flex; gap: 1rem; flex-wrap: wrap; }
+  .mini-kpi .val { font-size: 22px; font-weight: 600; letter-spacing: -.02em; line-height: 1; }
+  .mini-kpi .lbl { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  @media (max-width: 560px) { .site-kpi-row { grid-template-columns: 1fr; } }
+
+  /* FILTERS */
+  .filters { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 1.25rem; align-items: center; }
+  .filters label { font-size: 12px; color: var(--muted); }
+  .filters select {
+    font-family: inherit; font-size: 13px; padding: 6px 26px 6px 10px;
+    border: 1px solid var(--border); border-radius: var(--r);
+    background: var(--surface) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24'%3E%3Cpath fill='%23888' d='M7 10l5 5 5-5z'/%3E%3C/svg%3E") no-repeat right 8px center;
+    color: var(--text); cursor: pointer; appearance: none;
+  }
+  .filter-reset { font-size: 12px; color: var(--muted); background: none; border: 1px solid var(--border); border-radius: var(--r); padding: 6px 12px; cursor: pointer; font-family: inherit; }
+  .filter-reset:hover { background: var(--surface2); }
+
+  /* CHARTS */
+  .charts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 1.5rem; }
+  @media (max-width: 640px) { .charts-grid { grid-template-columns: 1fr; } }
+  .chart-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-lg); padding: 1.25rem; }
+  .chart-card.full { grid-column: 1 / -1; }
+  .chart-title { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin-bottom: 12px; }
+  .legend { display: flex; flex-wrap: wrap; gap: 8px 14px; margin-bottom: 10px; font-size: 12px; color: var(--muted); }
+  .legend span { display: flex; align-items: center; gap: 5px; }
+  .legend .dot { width: 9px; height: 9px; border-radius: 2px; flex-shrink: 0; }
+
+  /* TABLE */
+  .table-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-lg); overflow: hidden; margin-bottom: 1.5rem; }
+  .table-header { padding: .75rem 1.25rem; border-bottom: 1px solid var(--border); font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); display: flex; justify-content: space-between; align-items: center; }
+  #row-count { font-size: 12px; color: var(--muted); font-weight: 400; text-transform: none; letter-spacing: 0; }
+  .table-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; table-layout: fixed; }
+  th { text-align: left; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); padding: 8px 12px; border-bottom: 1px solid var(--border); background: var(--bg); white-space: nowrap; }
+  td { padding: 9px 12px; border-bottom: 1px solid var(--border); vertical-align: top; word-break: break-word; color: var(--text); }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: var(--bg); }
+  .col-site  { width: 7%; }
+  .col-acao  { width: 28%; }
+  .col-owner { width: 14%; }
+  .col-sub   { width: 9%; }
+  .col-data  { width: 9%; }
+  .col-stat  { width: 12%; }
+  .col-obs   { width: 21%; }
+
+  .badge { display: inline-block; font-size: 11px; font-weight: 500; padding: 2px 9px; border-radius: 999px; white-space: nowrap; }
+  .s-exec   { background: #d1fae5; color: #065f46; }
+  .s-done   { background: #dcfce7; color: #14532d; }
+  .s-noinit { background: #fef3c7; color: #92400e; }
+  .s-cancel { background: #fee2e2; color: #991b1b; }
+  .s-none   { background: var(--surface2); color: var(--muted); }
+
+  .tag-site { display: inline-block; font-size: 10px; font-weight: 600; padding: 2px 7px; border-radius: 4px; letter-spacing: .04em; }
+  .tag-sp11 { background: #ede9fe; color: #5b21b6; }
+  .tag-sp10 { background: #dbeafe; color: #1e40af; }
+
+  .late { color: var(--red); font-weight: 500; }
+  .soon { color: var(--amber); font-weight: 500; }
+
+  #status-msg { text-align: center; padding: 3rem 1rem; color: var(--muted); font-size: 14px; display: none; }
+  #status-msg.show { display: block; }
+  #status-msg.error { color: var(--red); }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <header>
+    <div class="header-left">
+      <h1>Plano de Ação VSM ICQA · SP10 & SP11</h1>
+      <p id="last-update">Carregando…</p>
+    </div>
+    <div class="header-right">
+      <button class="sync-btn" id="syncBtn" onclick="loadData()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6M1 20v-6h6"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg>
+        Atualizar
+      </button>
+    </div>
+  </header>
+
+  <div id="status-msg"></div>
+
+  <div id="main" style="display:none">
+
+    <!-- SITE TABS -->
+    <div class="site-tabs">
+      <button class="site-tab active" onclick="setSite('all')" id="tab-all">Todos</button>
+      <button class="site-tab" onclick="setSite('SP11')" id="tab-SP11">SP11</button>
+      <button class="site-tab" onclick="setSite('SP10')" id="tab-SP10">SP10</button>
+    </div>
+
+    <!-- KPIs gerais -->
+    <div class="kpi-grid" id="kpis"></div>
+
+    <!-- KPIs por site (só aparece em "Todos") -->
+    <div class="site-kpi-row" id="siteKpis"></div>
+
+    <!-- FILTERS -->
+    <div class="filters">
+      <label>Filtrar:</label>
+      <select id="fStatus"><option value="">Todos os status</option></select>
+      <select id="fOwner"><option value="">Todos os responsáveis</option></select>
+      <select id="fSub"><option value="">Todos os subprocessos</option></select>
+      <select id="fMatrix"><option value="">Toda a matriz</option></select>
+      <button class="filter-reset" onclick="resetFilters()">Limpar filtros</button>
+    </div>
+
+    <!-- CHARTS -->
+    <div class="charts-grid">
+      <div class="chart-card">
+        <div class="chart-title">Status das ações</div>
+        <div class="legend" id="legStatus"></div>
+        <div style="position:relative;height:200px"><canvas id="cStatus" role="img" aria-label="Status das ações"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">Matriz de prioridade</div>
+        <div class="legend" id="legMatrix"></div>
+        <div style="position:relative;height:200px"><canvas id="cMatrix" role="img" aria-label="Matriz de prioridade"></canvas></div>
+      </div>
+      <div class="chart-card full">
+        <div class="chart-title">Ações por responsável</div>
+        <div style="position:relative" id="ownerWrap"><canvas id="cOwner" role="img" aria-label="Ações por responsável"></canvas></div>
+      </div>
+    </div>
+
+    <!-- TABLE -->
+    <div class="table-card">
+      <div class="table-header">
+        Detalhamento das ações
+        <span id="row-count"></span>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th class="col-site">Site</th>
+              <th class="col-acao">Plano de ação</th>
+              <th class="col-owner">Responsável</th>
+              <th class="col-sub">Subprocesso</th>
+              <th class="col-data">Entrega</th>
+              <th class="col-stat">Status</th>
+              <th class="col-obs">Observações</th>
+            </tr>
+          </thead>
+          <tbody id="tBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+  </div><!-- /main -->
+</div>
+
+<script>
+const SHEET_ID = '1DpdE6_M0yoYW8i9RvsOeMHDJcama6hVHxG_s4wVkkZc';
+const SOURCES = [
+  { site: 'SP11', gid: '1380405107' },
+  { site: 'SP10', gid: '1523115913' },
+];
+const PROXY = 'https://corsproxy.io/?';
+
+const STATUS_COLORS = {
+  'En Ejecución':'#1D9E75','Concluida':'#639922',
+  'No Iniciada':'#d97706','Cancelada':'#dc2626','Sem status':'#888780',
+};
+const MATRIX_COLORS = {
+  'Alto Impacto, Alto Esforço':'#2563eb','Alto Impacto, Baixo Esforço':'#1D9E75',
+  'Baixo Impacto, Baixo Esforço':'#888780','Baixo Impacto, Alto Esforço':'#d97706',
+};
+const BADGE = {
+  'En Ejecución':'s-exec','Concluida':'s-done',
+  'No Iniciada':'s-noinit','Cancelada':'s-cancel','Sem status':'s-none',
+};
+
+let allData = [];
+let activeSite = 'all';
+let charts = {};
+
+/* ── INIT ── */
+window.addEventListener('DOMContentLoaded', loadData);
+
+/* ── FETCH BOTH SHEETS ── */
+async function loadData() {
+  const btn = document.getElementById('syncBtn');
+  btn.classList.add('loading');
+  showStatus('Carregando SP11 e SP10…', false);
+  document.getElementById('main').style.display = 'none';
+
+  try {
+    const results = await Promise.all(SOURCES.map(async ({ site, gid }) => {
+      const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${gid}`;
+      const res = await fetch(PROXY + encodeURIComponent(url));
+      if (!res.ok) throw new Error(`Erro ao carregar ${site}: HTTP ${res.status}`);
+      const text = await res.text();
+      const rows = parseCSV(text);
+      return processRows(rows, site);
+    }));
+
+    allData = results.flat();
+    if (allData.length === 0) throw new Error('Nenhuma linha encontrada. Verifique se a planilha está publicada.');
+
+    populateFilters();
+    render();
+    document.getElementById('last-update').textContent = `Atualizado em ${new Date().toLocaleString('pt-BR')}`;
+    hideStatus();
+    document.getElementById('main').style.display = '';
+  } catch (e) {
+    showStatus('Erro: ' + e.message + '\n\nCertifique-se de que a planilha está publicada em Arquivo → Publicar na web → CSV.', true);
+  } finally {
+    btn.classList.remove('loading');
+  }
+}
+
+/* ── CSV PARSER ── */
+function parseCSV(text) {
+  return text.split(/\r?\n/).filter(l => l.trim()).map(line => {
+    const cols = []; let cur = '', inQ = false;
+    for (const c of line) {
+      if (c === '"') inQ = !inQ;
+      else if (c === ',' && !inQ) { cols.push(cur.trim()); cur = ''; }
+      else cur += c;
+    }
+    cols.push(cur.trim());
+    return cols;
+  });
+}
+
+/* ── PROCESS ROWS ── */
+function processRows(rows, site) {
+  let hi = -1;
+  for (let i = 0; i < rows.length; i++) {
+    const j = rows[i].join('|').toLowerCase();
+    if (j.includes('plano') && j.includes('owner')) { hi = i; break; }
+  }
+  if (hi < 0) return [];
+
+  const h = rows[hi].map(x => x.toLowerCase().trim());
+  const idx = k => h.findIndex(x => x.includes(k));
+  const iAcao = idx('plano'), iOwner = idx('owner'), iData = idx('fecha'),
+        iMatrix = idx('matriz'), iStatus = idx('status'), iObs = idx('observ'),
+        iSub = idx('subpro'), iGrupo = idx('grupo');
+
+  return rows.slice(hi + 1).map(r => {
+    const acao = (r[iAcao] || '').trim();
+    if (!acao) return null;
+    return {
+      site,
+      acao,
+      owner:  (r[iOwner]  || '').trim(),
+      entrega:(r[iData]   || '').trim(),
+      matrix: (r[iMatrix] || '').trim(),
+      status: (r[iStatus] || '').trim() || 'Sem status',
+      sub:    (r[iSub]    || '').trim() || 'All',
+      grupo:  (r[iGrupo]  || '').trim(),
+      obs:    (r[iObs]    || '').trim(),
+    };
+  }).filter(Boolean);
+}
+
+/* ── SITE TAB ── */
+function setSite(s) {
+  activeSite = s;
+  ['all','SP11','SP10'].forEach(id => {
+    document.getElementById('tab-' + id).classList.toggle('active', id === s);
+  });
+  render();
+}
+
+/* ── FILTERS ── */
+function populateFilters() {
+  fillSelect('fStatus', [...new Set(allData.map(d => d.status))].sort());
+  fillSelect('fOwner',  [...new Set(allData.map(d => shortName(d.owner)))].sort());
+  fillSelect('fSub',    [...new Set(allData.map(d => d.sub))].sort());
+  fillSelect('fMatrix', [...new Set(allData.map(d => d.matrix).filter(Boolean))].sort());
+}
+
+function fillSelect(id, vals) {
+  const sel = document.getElementById(id);
+  const first = sel.options[0]; sel.innerHTML = ''; sel.appendChild(first);
+  vals.forEach(v => { const o = document.createElement('option'); o.value = v; o.textContent = v; sel.appendChild(o); });
+  sel.onchange = render;
+}
+
+function resetFilters() {
+  ['fStatus','fOwner','fSub','fMatrix'].forEach(id => document.getElementById(id).selectedIndex = 0);
+  render();
+}
+
+function getFiltered() {
+  const st = document.getElementById('fStatus').value;
+  const ow = document.getElementById('fOwner').value;
+  const su = document.getElementById('fSub').value;
+  const mx = document.getElementById('fMatrix').value;
+  return allData.filter(d => {
+    if (activeSite !== 'all' && d.site !== activeSite) return false;
+    if (st && d.status !== st) return false;
+    if (ow && shortName(d.owner) !== ow) return false;
+    if (su && d.sub !== su) return false;
+    if (mx && d.matrix !== mx) return false;
+    return true;
+  });
+}
+
+/* ── RENDER ── */
+function render() {
+  const d = getFiltered();
+  renderKPIs(d);
+  renderSiteKPIs();
+  renderStatusChart(d);
+  renderMatrixChart(d);
+  renderOwnerChart(d);
+  renderTable(d);
+}
+
+/* ── KPIs ── */
+function kpiStats(d) {
+  const total = d.length;
+  const conc  = d.filter(x => x.status === 'Concluida').length;
+  const exec  = d.filter(x => x.status === 'En Ejecución').length;
+  const ninit = d.filter(x => x.status === 'No Iniciada').length;
+  const canc  = d.filter(x => x.status === 'Cancelada').length;
+  const pct   = total ? Math.round(conc / total * 100) : 0;
+  return { total, conc, exec, ninit, canc, pct };
+}
+
+function renderKPIs(d) {
+  const { total, conc, exec, ninit, canc, pct } = kpiStats(d);
+  document.getElementById('kpis').innerHTML = `
+    <div class="kpi"><div class="label">Total</div><div class="value">${total}</div><div class="sub">ações</div></div>
+    <div class="kpi"><div class="label">Concluídas</div><div class="value" style="color:var(--green2)">${conc}</div>
+      <div class="prog"><div class="prog-fill" style="width:${pct}%"></div></div><div class="sub">${pct}% do total</div></div>
+    <div class="kpi"><div class="label">Em execução</div><div class="value" style="color:var(--green)">${exec}</div><div class="sub">${total?Math.round(exec/total*100):0}%</div></div>
+    <div class="kpi"><div class="label">Não iniciadas</div><div class="value" style="color:var(--amber)">${ninit}</div><div class="sub">${total?Math.round(ninit/total*100):0}%</div></div>
+    <div class="kpi"><div class="label">Canceladas</div><div class="value" style="color:var(--red)">${canc}</div></div>
+  `;
+}
+
+function renderSiteKPIs() {
+  const box = document.getElementById('siteKpis');
+  if (activeSite !== 'all') { box.style.display = 'none'; return; }
+  box.style.display = 'grid';
+  box.innerHTML = SOURCES.map(({ site }) => {
+    const d = allData.filter(x => x.site === site);
+    const { total, conc, exec, ninit, pct } = kpiStats(d);
+    const tagCls = site === 'SP11' ? 'tag-sp11' : 'tag-sp10';
+    return `<div class="site-kpi-box">
+      <div class="site-label"><span class="tag-site ${tagCls}">${site}</span></div>
+      <div class="mini-kpis">
+        <div class="mini-kpi"><div class="val">${total}</div><div class="lbl">total</div></div>
+        <div class="mini-kpi"><div class="val" style="color:var(--green2)">${conc}</div><div class="lbl">concluídas (${pct}%)</div></div>
+        <div class="mini-kpi"><div class="val" style="color:var(--green)">${exec}</div><div class="lbl">em execução</div></div>
+        <div class="mini-kpi"><div class="val" style="color:var(--amber)">${ninit}</div><div class="lbl">não iniciadas</div></div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+/* ── CHARTS ── */
+function renderStatusChart(d) {
+  const m = countBy(d, 'status');
+  const labels = Object.keys(m), vals = labels.map(l => m[l]), colors = labels.map(l => STATUS_COLORS[l] || '#888');
+  document.getElementById('legStatus').innerHTML = labels.map((l,i) =>
+    `<span><span class="dot" style="background:${colors[i]}"></span>${l} (${vals[i]})</span>`).join('');
+  if (charts.status) charts.status.destroy();
+  charts.status = new Chart(document.getElementById('cStatus'), {
+    type: 'doughnut',
+    data: { labels, datasets: [{ data: vals, backgroundColor: colors, borderWidth: 2, borderColor: '#fff' }] },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+  });
+}
+
+function renderMatrixChart(d) {
+  const m = countBy(d, 'matrix');
+  const labels = Object.keys(m).filter(Boolean), vals = labels.map(l => m[l]), colors = labels.map(l => MATRIX_COLORS[l] || '#888');
+  document.getElementById('legMatrix').innerHTML = labels.map((l,i) =>
+    `<span><span class="dot" style="background:${colors[i]}"></span>${l} (${vals[i]})</span>`).join('');
+  if (charts.matrix) charts.matrix.destroy();
+  charts.matrix = new Chart(document.getElementById('cMatrix'), {
+    type: 'doughnut',
+    data: { labels, datasets: [{ data: vals, backgroundColor: colors, borderWidth: 2, borderColor: '#fff' }] },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+  });
+}
+
+function renderOwnerChart(d) {
+  const map = {};
+  d.forEach(x => {
+    const o = shortName(x.owner);
+    if (!map[o]) map[o] = { conc:0, exec:0, ninit:0, other:0 };
+    if (x.status==='Concluida') map[o].conc++;
+    else if (x.status==='En Ejecución') map[o].exec++;
+    else if (x.status==='No Iniciada') map[o].ninit++;
+    else map[o].other++;
+  });
+  const owners = Object.keys(map).sort((a,b) =>
+    (map[b].conc+map[b].exec+map[b].ninit+map[b].other)-(map[a].conc+map[a].exec+map[a].ninit+map[a].other));
+  document.getElementById('ownerWrap').style.height = Math.max(owners.length*34+80,180)+'px';
+  if (charts.owner) charts.owner.destroy();
+  charts.owner = new Chart(document.getElementById('cOwner'), {
+    type: 'bar',
+    data: {
+      labels: owners,
+      datasets: [
+        { label:'Concluída',    data: owners.map(o=>map[o].conc),  backgroundColor:'#639922' },
+        { label:'Em execução',  data: owners.map(o=>map[o].exec),  backgroundColor:'#1D9E75' },
+        { label:'Não iniciada', data: owners.map(o=>map[o].ninit), backgroundColor:'#d97706' },
+        { label:'Outros',       data: owners.map(o=>map[o].other), backgroundColor:'#888780' },
+      ]
+    },
+    options: {
+      indexAxis:'y', responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{ display:false } },
+      scales:{ x:{ stacked:true, ticks:{ stepSize:1 } }, y:{ stacked:true, ticks:{ font:{ size:11 } } } }
+    }
+  });
+}
+
+/* ── TABLE ── */
+function renderTable(d) {
+  document.getElementById('row-count').textContent = `${d.length} ação${d.length!==1?'ões':''}`;
+  const today = new Date();
+  document.getElementById('tBody').innerHTML = d.map(x => {
+    const bc = BADGE[x.status] || 's-none';
+    const dc = deadlineClass(x.entrega, x.status, today);
+    const tagCls = x.site === 'SP11' ? 'tag-sp11' : 'tag-sp10';
+    return `<tr>
+      <td class="col-site"><span class="tag-site ${tagCls}">${x.site}</span></td>
+      <td class="col-acao">${x.acao}</td>
+      <td class="col-owner" style="font-size:12px">${shortName(x.owner)}</td>
+      <td class="col-sub" style="font-size:12px">${x.sub}</td>
+      <td class="col-data ${dc}" style="font-size:12px;white-space:nowrap">${formatDate(x.entrega)}</td>
+      <td class="col-stat"><span class="badge ${bc}">${x.status}</span></td>
+      <td class="col-obs" style="font-size:12px;color:var(--muted)">${x.obs||'—'}</td>
+    </tr>`;
+  }).join('');
+}
+
+/* ── HELPERS ── */
+function shortName(n) {
+  if (!n) return '—';
+  const p = n.trim().split(/\s+/);
+  return p.length >= 2 ? p[0] + ' ' + p[p.length-1] : n;
+}
+function countBy(arr, key) {
+  const m = {};
+  arr.forEach(d => { const v = d[key]||'—'; m[v]=(m[v]||0)+1; });
+  return m;
+}
+function formatDate(s) {
+  if (!s) return '—';
+  const d = new Date(s);
+  return isNaN(d) ? s : d.toLocaleDateString('pt-BR');
+}
+function deadlineClass(s, status, today) {
+  if (!s || status==='Concluida' || status==='Cancelada') return '';
+  const d = new Date(s); if (isNaN(d)) return '';
+  const diff = (d - today) / 86400000;
+  return diff < 0 ? 'late' : diff <= 7 ? 'soon' : '';
+}
+function showStatus(msg, isErr) {
+  const el = document.getElementById('status-msg');
+  el.textContent = msg; el.style.display = 'block';
+  el.className = isErr ? 'show error' : 'show';
+}
+function hideStatus() { document.getElementById('status-msg').style.display = 'none'; }
+</script>
+</body>
+</html>
